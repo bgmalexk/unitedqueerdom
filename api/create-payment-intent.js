@@ -1,4 +1,6 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,9 +9,7 @@ export default async function handler(req, res) {
 
   try {
     const buffers = []
-    for await (const chunk of req) {
-      buffers.push(chunk)
-    }
+    for await (const chunk of req) buffers.push(chunk)
     const rawBody = Buffer.concat(buffers).toString()
     const { amount, message } = JSON.parse(rawBody)
 
@@ -23,9 +23,9 @@ export default async function handler(req, res) {
       metadata: { message: message || '' },
     })
 
-    return res.status(200).json({ clientSecret: paymentIntent.client_secret })
+    res.status(200).json({ clientSecret: paymentIntent.client_secret })
   } catch (err) {
     console.error('Stripe error:', err)
-    return res.status(500).json({ error: 'Stripe failed' })
+    res.status(500).json({ error: 'Stripe failed' })
   }
 }
