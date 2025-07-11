@@ -1,23 +1,28 @@
-const Stripe = require('stripe');
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({ message: 'Only POST allowed' });
+    return res.status(405).send('Only POST requests allowed');
   }
 
-  const { amount } = req.body;
+  const { amount, message } = req.body;
+
+  if (!amount || typeof amount !== 'number' || amount < 100) {
+    return res.status(400).json({ error: 'Invalid amount. Minimum is £1.' });
+  }
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100,
+      amount,
       currency: 'gbp',
+      metadata: { message: message || '' },
     });
 
-    res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    res.status(200).json({
+      clientSecret: paymentIntent.client_secret,
+    });
   } catch (err) {
-    console.error('Stripe error:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
   }
-};
+}
