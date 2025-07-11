@@ -1,8 +1,7 @@
-import Stripe from 'stripe';
-
+const Stripe = require('stripe');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ message: 'Only POST allowed' });
@@ -18,7 +17,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
-    console.error('Stripe error:', err.message); 
+    console.error('Stripe error:', err.message);
     res.status(500).json({ error: err.message });
   }
-}
+};
