@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // перевод фунтов в пенсы
+      amount: amount * 100,
       currency: 'gbp',
     });
 
